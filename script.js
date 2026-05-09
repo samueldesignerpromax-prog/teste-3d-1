@@ -1,8 +1,8 @@
 // script.js
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/loaders/FBXLoader.js';
+import { FBXLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/FBXLoader.js?module';
 
 
 // CENA
@@ -13,12 +13,10 @@ scene.background = new THREE.Color(0x222222);
 
 // CAMERA
 const camera = new THREE.PerspectiveCamera(
-
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
-
 );
 
 camera.position.set(0,5,15);
@@ -51,12 +49,12 @@ scene.add(light);
 
 
 // LUZ AMBIENTE
-const ambient = new THREE.AmbientLight(
-  0xffffff,
-  2
+scene.add(
+  new THREE.AmbientLight(
+    0xffffff,
+    2
+  )
 );
-
-scene.add(ambient);
 
 
 // CHÃO
@@ -76,7 +74,9 @@ scene.add(floor);
 
 
 // EIXOS
-scene.add(new THREE.AxesHelper(5));
+scene.add(
+  new THREE.AxesHelper(5)
+);
 
 
 // LOADER
@@ -86,14 +86,14 @@ let personagem;
 let mixer;
 
 
-// CARREGAR PERSONAGEM
+// CARREGAR FBX
 loader.load(
 
   './personagem.fbx',
 
-  function(fbx){
+  (fbx)=>{
 
-    console.log('personagem carregado');
+    console.log('FBX carregado');
 
     personagem = fbx;
 
@@ -103,21 +103,18 @@ loader.load(
       0.01
     );
 
-    personagem.position.set(0,0,0);
-
     scene.add(personagem);
 
-
-    // animação
     mixer = new THREE.AnimationMixer(
       personagem
     );
 
     if(fbx.animations.length > 0){
 
-      const action = mixer.clipAction(
-        fbx.animations[0]
-      );
+      const action =
+        mixer.clipAction(
+          fbx.animations[0]
+        );
 
       action.play();
 
@@ -125,18 +122,9 @@ loader.load(
 
   },
 
-  function(xhr){
+  undefined,
 
-    console.log(
-      (xhr.loaded / xhr.total * 100)
-      + '% carregado'
-    );
-
-  },
-
-  function(error){
-
-    console.log('erro');
+  (error)=>{
 
     console.log(error);
 
@@ -145,39 +133,27 @@ loader.load(
 );
 
 
-// CONTROLES
+// MOVIMENTO
 document.addEventListener(
   'keydown',
-  function(e){
+  (e)=>{
 
     if(!personagem) return;
 
     if(e.key === 'ArrowRight'){
-
       personagem.position.x += 0.3;
-
-      personagem.rotation.y = -1.5;
-
     }
 
     if(e.key === 'ArrowLeft'){
-
       personagem.position.x -= 0.3;
-
-      personagem.rotation.y = 1.5;
-
     }
 
     if(e.key === 'ArrowUp'){
-
       personagem.position.z -= 0.3;
-
     }
 
     if(e.key === 'ArrowDown'){
-
       personagem.position.z += 0.3;
-
     }
 
   }
@@ -188,7 +164,7 @@ document.addEventListener(
 const clock = new THREE.Clock();
 
 
-// ANIMAÇÃO
+// LOOP
 function animate(){
 
   requestAnimationFrame(animate);
@@ -201,28 +177,11 @@ function animate(){
 
   }
 
-  renderer.render(scene,camera);
+  renderer.render(
+    scene,
+    camera
+  );
 
 }
 
 animate();
-
-
-// RESIZE
-window.addEventListener(
-  'resize',
-  ()=>{
-
-    camera.aspect =
-      window.innerWidth /
-      window.innerHeight;
-
-    camera.updateProjectionMatrix();
-
-    renderer.setSize(
-      window.innerWidth,
-      window.innerHeight
-    );
-
-  }
-);
