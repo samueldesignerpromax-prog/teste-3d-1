@@ -4,119 +4,201 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.mod
 
 import { FBXLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/loaders/FBXLoader.js';
 
+
+// CENA
 const scene = new THREE.Scene();
 
 scene.background = new THREE.Color(0x222222);
 
+
+// CAMERA
 const camera = new THREE.PerspectiveCamera(
+
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
+
 );
 
-const renderer = new THREE.WebGLRenderer({ antialias:true });
+camera.position.set(0,5,15);
 
-renderer.setSize(window.innerWidth, window.innerHeight);
 
-document.body.appendChild(renderer.domElement);
+// RENDER
+const renderer = new THREE.WebGLRenderer({
+  antialias:true
+});
+
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight
+);
+
+document.body.appendChild(
+  renderer.domElement
+);
+
 
 // LUZ
-const light = new THREE.DirectionalLight(0xffffff, 2);
+const light = new THREE.DirectionalLight(
+  0xffffff,
+  5
+);
 
 light.position.set(5,10,5);
 
 scene.add(light);
 
+
+// LUZ AMBIENTE
+const ambient = new THREE.AmbientLight(
+  0xffffff,
+  2
+);
+
+scene.add(ambient);
+
+
 // CHÃO
-const floorGeometry = new THREE.PlaneGeometry(50,50);
-
-const floorMaterial = new THREE.MeshStandardMaterial({
-  color:0x555555
-});
-
 const floor = new THREE.Mesh(
-  floorGeometry,
-  floorMaterial
+
+  new THREE.PlaneGeometry(50,50),
+
+  new THREE.MeshStandardMaterial({
+    color:0x555555
+  })
+
 );
 
 floor.rotation.x = -Math.PI / 2;
 
 scene.add(floor);
 
-// PERSONAGEM
+
+// EIXOS
+scene.add(new THREE.AxesHelper(5));
+
+
+// LOADER
 const loader = new FBXLoader();
 
 let personagem;
 let mixer;
 
-loader.load(
-  'Combinação de joelhada voadora.fbx',
 
-  (fbx) => {
+// CARREGAR PERSONAGEM
+loader.load(
+
+  './personagem.fbx',
+
+  function(fbx){
+
+    console.log('personagem carregado');
 
     personagem = fbx;
 
-    personagem.scale.set(0.01,0.01,0.01);
+    personagem.scale.set(
+      0.01,
+      0.01,
+      0.01
+    );
 
-    personagem.position.y = 0;
+    personagem.position.set(0,0,0);
 
     scene.add(personagem);
 
-    // animação
-    mixer = new THREE.AnimationMixer(personagem);
 
-    const action = mixer.clipAction(
-      fbx.animations[0]
+    // animação
+    mixer = new THREE.AnimationMixer(
+      personagem
     );
 
-    action.play();
+    if(fbx.animations.length > 0){
+
+      const action = mixer.clipAction(
+        fbx.animations[0]
+      );
+
+      action.play();
+
+    }
 
   },
 
-  undefined,
+  function(xhr){
 
-  (error) => {
+    console.log(
+      (xhr.loaded / xhr.total * 100)
+      + '% carregado'
+    );
+
+  },
+
+  function(error){
+
+    console.log('erro');
+
     console.log(error);
+
+  }
+
+);
+
+
+// CONTROLES
+document.addEventListener(
+  'keydown',
+  function(e){
+
+    if(!personagem) return;
+
+    if(e.key === 'ArrowRight'){
+
+      personagem.position.x += 0.3;
+
+      personagem.rotation.y = -1.5;
+
+    }
+
+    if(e.key === 'ArrowLeft'){
+
+      personagem.position.x -= 0.3;
+
+      personagem.rotation.y = 1.5;
+
+    }
+
+    if(e.key === 'ArrowUp'){
+
+      personagem.position.z -= 0.3;
+
+    }
+
+    if(e.key === 'ArrowDown'){
+
+      personagem.position.z += 0.3;
+
+    }
+
   }
 );
 
-// câmera
-camera.position.set(0,3,8);
 
-// movimento
-document.addEventListener('keydown',(e)=>{
-
-  if(!personagem) return;
-
-  if(e.key === 'ArrowRight'){
-    personagem.position.x += 0.2;
-  }
-
-  if(e.key === 'ArrowLeft'){
-    personagem.position.x -= 0.2;
-  }
-
-  if(e.key === 'ArrowUp'){
-    personagem.position.z -= 0.2;
-  }
-
-  if(e.key === 'ArrowDown'){
-    personagem.position.z += 0.2;
-  }
-
-});
-
-// relógio
+// CLOCK
 const clock = new THREE.Clock();
 
-// animação
+
+// ANIMAÇÃO
 function animate(){
 
   requestAnimationFrame(animate);
 
   if(mixer){
-    mixer.update(clock.getDelta());
+
+    mixer.update(
+      clock.getDelta()
+    );
+
   }
 
   renderer.render(scene,camera);
@@ -125,17 +207,22 @@ function animate(){
 
 animate();
 
-// resize
-window.addEventListener('resize',()=>{
 
-  camera.aspect =
-    window.innerWidth / window.innerHeight;
+// RESIZE
+window.addEventListener(
+  'resize',
+  ()=>{
 
-  camera.updateProjectionMatrix();
+    camera.aspect =
+      window.innerWidth /
+      window.innerHeight;
 
-  renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-  );
+    camera.updateProjectionMatrix();
 
-});
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  }
+);
