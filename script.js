@@ -49,12 +49,12 @@ scene.add(light);
 
 
 // LUZ AMBIENTE
-scene.add(
-  new THREE.AmbientLight(
-    0xffffff,
-    2
-  )
+const ambient = new THREE.AmbientLight(
+  0xffffff,
+  3
 );
+
+scene.add(ambient);
 
 
 // CHÃO
@@ -86,7 +86,7 @@ let personagem;
 let mixer;
 
 
-// CARREGAR FBX
+// CARREGAR PERSONAGEM
 loader.load(
 
   './personagem.fbx',
@@ -97,14 +97,47 @@ loader.load(
 
     personagem = fbx;
 
+
+    // ESCALA
     personagem.scale.set(
-      0.01,
-      0.01,
-      0.01
+      0.001,
+      0.001,
+      0.001
     );
 
+
+    // POSIÇÃO
+    personagem.position.set(
+      0,
+      0,
+      0
+    );
+
+
+    // ROTAÇÃO
+    personagem.rotation.y = 1.5;
+
+
+    // MATERIAL
+    personagem.traverse((child)=>{
+
+      if(child.isMesh){
+
+        child.material =
+          new THREE.MeshStandardMaterial({
+            color:0xffffff
+          });
+
+      }
+
+    });
+
+
+    // ADICIONAR
     scene.add(personagem);
 
+
+    // ANIMAÇÃO
     mixer = new THREE.AnimationMixer(
       personagem
     );
@@ -133,27 +166,39 @@ loader.load(
 );
 
 
-// MOVIMENTO
+// TECLADO
 document.addEventListener(
   'keydown',
   (e)=>{
 
     if(!personagem) return;
 
+
     if(e.key === 'ArrowRight'){
+
       personagem.position.x += 0.3;
+
     }
+
 
     if(e.key === 'ArrowLeft'){
+
       personagem.position.x -= 0.3;
+
     }
+
 
     if(e.key === 'ArrowUp'){
+
       personagem.position.z -= 0.3;
+
     }
 
+
     if(e.key === 'ArrowDown'){
+
       personagem.position.z += 0.3;
+
     }
 
   }
@@ -185,3 +230,23 @@ function animate(){
 }
 
 animate();
+
+
+// RESIZE
+window.addEventListener(
+  'resize',
+  ()=>{
+
+    camera.aspect =
+      window.innerWidth /
+      window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  }
+);
