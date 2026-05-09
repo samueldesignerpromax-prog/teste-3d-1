@@ -2,10 +2,14 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
 import { GLTFLoader } from 'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js?module';
 
+
+// CENA
 const scene = new THREE.Scene();
 
-scene.background = new THREE.Color(0x222222);
+scene.background = new THREE.Color(0x000000);
 
+
+// CAMERA
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -13,11 +17,11 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-camera.position.set(0,2,5);
+camera.position.z = 5;
 
-const renderer = new THREE.WebGLRenderer({
-  antialias:true
-});
+
+// RENDER
+const renderer = new THREE.WebGLRenderer();
 
 renderer.setSize(
   window.innerWidth,
@@ -29,43 +33,33 @@ document.body.appendChild(
 );
 
 
-// luz
-const light = new THREE.DirectionalLight(
+// LUZ
+const light = new THREE.HemisphereLight(
   0xffffff,
+  0x444444,
   5
 );
 
-light.position.set(5,10,5);
-
 scene.add(light);
 
-scene.add(
-  new THREE.AmbientLight(
-    0xffffff,
-    2
-  )
-);
 
+// TESTE CUBO
+const cube = new THREE.Mesh(
 
-// chão
-const floor = new THREE.Mesh(
+  new THREE.BoxGeometry(),
 
-  new THREE.PlaneGeometry(50,50),
-
-  new THREE.MeshStandardMaterial({
-    color:0x555555
+  new THREE.MeshBasicMaterial({
+    color:0x00ff00
   })
 
 );
 
-floor.rotation.x = -Math.PI / 2;
+cube.position.x = -2;
 
-scene.add(floor);
+scene.add(cube);
 
 
-let personagem;
-let mixer;
-
+// LOADER
 const loader = new GLTFLoader();
 
 loader.load(
@@ -74,74 +68,44 @@ loader.load(
 
   (gltf)=>{
 
-    personagem = gltf.scene;
+    console.log('GLB FUNCIONOU');
 
-    personagem.scale.set(1,1,1);
+    const model = gltf.scene;
 
-    scene.add(personagem);
+    model.scale.set(1,1,1);
 
-    mixer = new THREE.AnimationMixer(
-      personagem
-    );
+    model.position.set(0,0,0);
 
-    if(gltf.animations.length > 0){
+    scene.add(model);
 
-      const action =
-        mixer.clipAction(
-          gltf.animations[0]
-        );
+  },
 
-      action.play();
+  undefined,
 
-    }
+  (error)=>{
+
+    console.log('ERRO GLB');
+
+    console.log(error);
 
   }
 
 );
 
 
-// movimento
-document.addEventListener(
-  'keydown',
-  (e)=>{
-
-    if(!personagem) return;
-
-    if(e.key === 'ArrowRight'){
-      personagem.position.x += 0.1;
-    }
-
-    if(e.key === 'ArrowLeft'){
-      personagem.position.x -= 0.1;
-    }
-
-    if(e.key === 'ArrowUp'){
-      personagem.position.z -= 0.1;
-    }
-
-    if(e.key === 'ArrowDown'){
-      personagem.position.z += 0.1;
-    }
-
-  }
-);
-
-
-const clock = new THREE.Clock();
-
+// LOOP
 function animate(){
 
   requestAnimationFrame(animate);
 
-  if(mixer){
+  cube.rotation.x += 0.01;
 
-    mixer.update(
-      clock.getDelta()
-    );
+  cube.rotation.y += 0.01;
 
-  }
-
-  renderer.render(scene,camera);
+  renderer.render(
+    scene,
+    camera
+  );
 
 }
 
